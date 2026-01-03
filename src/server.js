@@ -13,6 +13,10 @@ import { AccountManager } from './account-manager/index.js';
 import { formatDuration } from './utils/helpers.js';
 import { logger } from './utils/logger.js';
 
+// Parse fallback flag directly from command line args to avoid circular dependency
+const args = process.argv.slice(2);
+const FALLBACK_ENABLED = args.includes('--fallback') || process.env.FALLBACK === 'true';
+
 const app = express();
 
 // Initialize account manager (will be fully initialized on first request or startup)
@@ -595,7 +599,7 @@ app.post('/v1/messages', async (req, res) => {
 
             try {
                 // Use the streaming generator with account manager
-                for await (const event of sendMessageStream(request, accountManager)) {
+                for await (const event of sendMessageStream(request, accountManager, FALLBACK_ENABLED)) {
                     res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
                     // Flush after each event for real-time streaming
                     if (res.flush) res.flush();
@@ -616,7 +620,7 @@ app.post('/v1/messages', async (req, res) => {
 
         } else {
             // Handle non-streaming response
-            const response = await sendMessage(request, accountManager);
+            const response = await sendMessage(request, accountManager, FALLBACK_ENABLED);
             res.json(response);
         }
 

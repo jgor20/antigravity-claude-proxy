@@ -12,6 +12,7 @@ import os from 'os';
 // Parse command line arguments
 const args = process.argv.slice(2);
 const isDebug = args.includes('--debug') || process.env.DEBUG === 'true';
+const isFallbackEnabled = args.includes('--fallback') || process.env.FALLBACK === 'true';
 
 // Initialize logger
 logger.setDebug(isDebug);
@@ -19,6 +20,13 @@ logger.setDebug(isDebug);
 if (isDebug) {
     logger.debug('Debug mode enabled');
 }
+
+if (isFallbackEnabled) {
+    logger.info('Model fallback mode enabled');
+}
+
+// Export fallback flag for server to use
+export const FALLBACK_ENABLED = isFallbackEnabled;
 
 const PORT = process.env.PORT || DEFAULT_PORT;
 
@@ -40,14 +48,22 @@ app.listen(PORT, () => {
     if (!isDebug) {
         controlSection += '║    --debug            Enable debug logging                   ║\n';
     }
+    if (!isFallbackEnabled) {
+        controlSection += '║    --fallback         Enable model fallback on quota exhaust ║\n';
+    }
     controlSection += '║    Ctrl+C             Stop server                            ║';
 
-    // Build status section if debug mode is active
+    // Build status section if any modes are active
     let statusSection = '';
-    if (isDebug) {
+    if (isDebug || isFallbackEnabled) {
         statusSection = '║                                                              ║\n';
         statusSection += '║  Active Modes:                                               ║\n';
-        statusSection += '║    ✓ Debug mode enabled                                      ║\n';
+        if (isDebug) {
+            statusSection += '║    ✓ Debug mode enabled                                      ║\n';
+        }
+        if (isFallbackEnabled) {
+            statusSection += '║    ✓ Model fallback enabled                                  ║\n';
+        }
     }
 
     logger.log(`
