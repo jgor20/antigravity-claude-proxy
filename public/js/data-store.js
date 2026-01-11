@@ -78,8 +78,8 @@ document.addEventListener('alpine:init', () => {
                 // Get password from global store
                 const password = Alpine.store('global').webuiPassword;
                 
-                // Use lightweight health endpoint
-                const { response, newPassword } = await window.utils.request('/health', {}, password);
+                // Use lightweight endpoint (no quota fetching)
+                const { response, newPassword } = await window.utils.request('/api/config', {}, password);
                 
                 if (newPassword) Alpine.store('global').webuiPassword = newPassword;
                 
