@@ -17,7 +17,8 @@ const BCRYPT_PREFIX = '$2';
  */
 export function isHashed(str) {
     if (!str || typeof str !== 'string') return false;
-    return str.startsWith(BCRYPT_PREFIX) && str.length >= 59;
+    // Bcrypt hashes are exactly 60 characters ($2b$12$... format)
+    return str.startsWith(BCRYPT_PREFIX) && str.length >= 60;
 }
 
 /**
