@@ -362,6 +362,14 @@ export function mountWebUI(app, dirname, accountManager) {
                 });
             }
 
+            // Enforce maximum password length to prevent DoS from bcrypt hashing extremely long inputs
+            if (newPassword.length > 128) {
+                return res.status(400).json({
+                    status: 'error',
+                    error: 'Password must not exceed 128 characters'
+                });
+            }
+
             // If current password exists, verify old password
             if (config.webuiPassword) {
                 const isValid = await verifyPassword(oldPassword, config.webuiPassword);
