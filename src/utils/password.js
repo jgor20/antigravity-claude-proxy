@@ -5,6 +5,7 @@
  */
 
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const SALT_ROUNDS = 12;
 const BCRYPT_PREFIX = '$2';
@@ -41,9 +42,19 @@ export async function verifyPassword(password, hash) {
     if (!password || !hash) return false;
 
     // If hash is not actually a bcrypt hash (legacy plain text),
-    // fall back to direct comparison for migration
+    // use constant-time comparison for migration to avoid timing attacks
     if (!isHashed(hash)) {
-        return password === hash;
+        const bufPassword = Buffer.from(password, 'utf8');
+        const bufHash = Buffer.from(hash, 'utf8');
+
+        // Pad shorter buffer to match longer length to avoid early-return timing differences
+        const maxLen = Math.max(bufPassword.length, bufHash.length);
+        const paddedPassword = Buffer.alloc(maxLen, 0);
+        const paddedHash = Buffer.alloc(maxLen, 0);
+        bufPassword.copy(paddedPassword);
+        bufHash.copy(paddedHash);
+
+        return crypto.timingSafeEqual(paddedPassword, paddedHash);
     }
 
     return bcrypt.compare(password, hash);
