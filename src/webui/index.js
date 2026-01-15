@@ -22,6 +22,7 @@ import { readClaudeConfig, updateClaudeConfig, replaceClaudeConfig, getClaudeCon
 import { logger } from '../utils/logger.js';
 import { getAuthorizationUrl, completeOAuthFlow, startCallbackServer } from '../auth/oauth.js';
 import { loadAccounts, saveAccounts } from '../account-manager/storage.js';
+import { verifyPassword } from '../utils/password.js';
 
 // Get package version
 const __filename = fileURLToPath(import.meta.url);
@@ -116,7 +117,7 @@ async function addAccount(accountData) {
  * Password can be set via WEBUI_PASSWORD env var or config.json
  */
 function createAuthMiddleware() {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         const password = config.webuiPassword;
         if (!password) return next();
 
@@ -126,8 +127,9 @@ function createAuthMiddleware() {
         const isProtected = (isApiRoute && !isException) || req.path === '/account-limits' || req.path === '/health';
 
         if (isProtected) {
-            const providedPassword = req.headers['x-webui-password'] || req.query.password;
-            if (providedPassword !== password) {
+            const providedPassword = req.headers['x-webui-password'];
+            const isValid = await verifyPassword(providedPassword, password);
+            if (!isValid) {
                 return res.status(401).json({ status: 'error', error: 'Unauthorized: Password required' });
             }
         }
@@ -340,7 +342,7 @@ export function mountWebUI(app, dirname, accountManager) {
     /**
      * POST /api/config/password - Change WebUI password
      */
-    app.post('/api/config/password', (req, res) => {
+    app.post('/api/config/password', async (req, res) => {
         try {
             const { oldPassword, newPassword } = req.body;
 
@@ -352,20 +354,29 @@ export function mountWebUI(app, dirname, accountManager) {
                 });
             }
 
-            // If current password exists, verify old password
-            if (config.webuiPassword && config.webuiPassword !== oldPassword) {
-                return res.status(403).json({
+            // Enforce minimum password length
+            if (newPassword.length < 8) {
+                return res.status(400).json({
                     status: 'error',
-                    error: 'Invalid current password'
+                    error: 'Password must be at least 8 characters'
                 });
             }
 
-            // Save new password
+            // If current password exists, verify old password
+            if (config.webuiPassword) {
+                const isValid = await verifyPassword(oldPassword, config.webuiPassword);
+                if (!isValid) {
+                    return res.status(403).json({
+                        status: 'error',
+                        error: 'Invalid current password'
+                    });
+                }
+            }
+
+            // Save new password (will be hashed by saveConfig)
             const success = saveConfig({ webuiPassword: newPassword });
 
             if (success) {
-                // Update in-memory config
-                config.webuiPassword = newPassword;
                 res.json({
                     status: 'ok',
                     message: 'Password changed successfully'

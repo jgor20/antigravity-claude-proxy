@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { logger } from './utils/logger.js';
+import { hashPasswordSync, isHashed } from './utils/password.js';
 
 // Default config
 const DEFAULT_CONFIG = {
@@ -73,6 +74,11 @@ export function getPublicConfig() {
 
 export function saveConfig(updates) {
     try {
+        // Hash password if being updated and not already hashed
+        if (updates.webuiPassword && !isHashed(updates.webuiPassword)) {
+            updates.webuiPassword = hashPasswordSync(updates.webuiPassword);
+        }
+
         // Apply updates
         config = { ...config, ...updates };
 
