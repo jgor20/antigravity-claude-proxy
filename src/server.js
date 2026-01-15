@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { sendMessage, sendMessageStream, listModels, getModelQuotas, getSubscriptionTier } from './cloudcode/index.js';
 import { mountWebUI } from './webui/index.js';
 import { config } from './config.js';
+import { verifyPassword } from './utils/password.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,17 +63,35 @@ async function ensureInitialized() {
     return initPromise;
 }
 
+// CORS configuration - restrict to localhost origins
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Allow requests with no origin (curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+
+        // Allow localhost with any port
+        const localhostPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+        if (localhostPattern.test(origin)) {
+            return callback(null, true);
+        }
+
+        // Reject other origins
+        callback(new Error('CORS not allowed from this origin'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-webui-password']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
 
-// API Key authentication middleware for /v1/* endpoints
-app.use('/v1', (req, res, next) => {
-    // Skip validation if apiKey is not configured
-    if (!config.apiKey) {
-        return next();
-    }
+// Track if we've warned about no auth configured
+let noAuthWarningLogged = false;
 
+// API Key authentication middleware for /v1/* endpoints
+app.use('/v1', async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const xApiKey = req.headers['x-api-key'];
 
@@ -83,17 +102,42 @@ app.use('/v1', (req, res, next) => {
         providedKey = xApiKey;
     }
 
-    if (!providedKey || providedKey !== config.apiKey) {
-        logger.warn(`[API] Unauthorized request from ${req.ip}, invalid API key`);
-        return res.status(401).json({
-            type: 'error',
-            error: {
-                type: 'authentication_error',
-                message: 'Invalid or missing API key'
-            }
-        });
+    // If API key is configured, validate against it
+    if (config.apiKey) {
+        if (!providedKey || providedKey !== config.apiKey) {
+            logger.warn(`[API] Unauthorized request from ${req.ip}, invalid API key`);
+            return res.status(401).json({
+                type: 'error',
+                error: {
+                    type: 'authentication_error',
+                    message: 'Invalid or missing API key'
+                }
+            });
+        }
+        return next();
     }
 
+    // If no API key configured, fall back to WebUI password
+    if (config.webuiPassword) {
+        const isValid = await verifyPassword(providedKey, config.webuiPassword);
+        if (!isValid) {
+            logger.warn(`[API] Unauthorized request from ${req.ip}, invalid credentials`);
+            return res.status(401).json({
+                type: 'error',
+                error: {
+                    type: 'authentication_error',
+                    message: 'Invalid or missing API key'
+                }
+            });
+        }
+        return next();
+    }
+
+    // Neither API key nor WebUI password configured - warn once and allow
+    if (!noAuthWarningLogged) {
+        logger.warn('[API] No API key or WebUI password configured - API endpoints are unprotected');
+        noAuthWarningLogged = true;
+    }
     next();
 });
 
