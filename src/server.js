@@ -4,6 +4,7 @@
  * Supports multi-account load balancing
  */
 
+import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -102,9 +103,18 @@ app.use('/v1', async (req, res, next) => {
         providedKey = xApiKey;
     }
 
-    // If API key is configured, validate against it
+    // If API key is configured, validate against it using timing-safe comparison
     if (config.apiKey) {
-        if (!providedKey || providedKey !== config.apiKey) {
+        let isValid = false;
+        if (providedKey) {
+            const keyBuffer = Buffer.from(providedKey, 'utf8');
+            const configBuffer = Buffer.from(config.apiKey, 'utf8');
+            // Only use timingSafeEqual if lengths match; different lengths are invalid
+            if (keyBuffer.length === configBuffer.length) {
+                isValid = crypto.timingSafeEqual(keyBuffer, configBuffer);
+            }
+        }
+        if (!isValid) {
             logger.warn(`[API] Unauthorized request from ${req.ip}, invalid API key`);
             return res.status(401).json({
                 type: 'error',
