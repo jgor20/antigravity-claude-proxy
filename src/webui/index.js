@@ -158,10 +158,21 @@ export function mountWebUI(app, dirname, accountManager) {
         if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
             const origin = req.headers.origin;
             const referer = req.headers.referer;
+            const hasAuthHeader = req.headers['x-webui-password'] || req.headers['authorization'];
 
-            // Allow requests with no origin (curl, Postman, server-to-server)
-            if (!origin && !referer) {
+            // If request has authentication header, allow it (CLI tools authenticate)
+            // This covers curl, Postman, and server-to-server with credentials
+            if (hasAuthHeader) {
                 return next();
+            }
+
+            // For requests without auth header, require valid Origin or Referer
+            // This ensures browser requests come from localhost
+            if (!origin && !referer) {
+                return res.status(403).json({
+                    status: 'error',
+                    error: 'Missing origin header - include authentication or access from browser'
+                });
             }
 
             // Validate origin is localhost
