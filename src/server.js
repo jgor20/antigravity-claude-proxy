@@ -64,16 +64,31 @@ async function ensureInitialized() {
     return initPromise;
 }
 
-// CORS configuration - restrict to localhost origins
+// CORS configuration
+// CORS_ORIGINS env var: '*' for all, comma-separated list, or empty for localhost-only
+const CORS_ORIGINS = process.env.CORS_ORIGINS?.trim() || '';
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
 
-        // Allow localhost with any port
+        // Allow all origins if CORS_ORIGINS is '*'
+        if (CORS_ORIGINS === '*') {
+            return callback(null, true);
+        }
+
+        // Always allow localhost with any port
         const localhostPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
         if (localhostPattern.test(origin)) {
             return callback(null, true);
+        }
+
+        // Check against custom allowed origins
+        if (CORS_ORIGINS) {
+            const allowedOrigins = CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean);
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
         }
 
         // Reject other origins
