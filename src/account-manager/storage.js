@@ -10,6 +10,7 @@ import { dirname } from 'path';
 import { ACCOUNT_CONFIG_PATH } from '../constants.js';
 import { getAuthStatus } from '../auth/database.js';
 import { logger } from '../utils/logger.js';
+import { encrypt, decrypt } from '../utils/encryption.js';
 
 /**
  * Load accounts from the config file
@@ -24,18 +25,29 @@ export async function loadAccounts(configPath = ACCOUNT_CONFIG_PATH) {
         const configData = await readFile(configPath, 'utf-8');
         const config = JSON.parse(configData);
 
-        const accounts = (config.accounts || []).map(acc => ({
-            ...acc,
-            lastUsed: acc.lastUsed || null,
-            enabled: acc.enabled !== false, // Default to true if not specified
-            // Reset invalid flag on startup - give accounts a fresh chance to refresh
-            isInvalid: false,
-            invalidReason: null,
-            modelRateLimits: acc.modelRateLimits || {},
-            // New fields for subscription and quota tracking
-            subscription: acc.subscription || { tier: 'unknown', projectId: null, detectedAt: null },
-            quota: acc.quota || { models: {}, lastChecked: null }
-        }));
+        const accounts = (config.accounts || []).map(acc => {
+            // Decrypt sensitive credentials
+            const decryptedRefreshToken = acc.refreshToken ? decrypt(acc.refreshToken) : undefined;
+            const decryptedApiKey = acc.apiKey ? decrypt(acc.apiKey) : undefined;
+
+            // Check if decryption failed (returns null on failure)
+            const hasInvalidToken = (acc.refreshToken && decryptedRefreshToken === null) ||
+                                   (acc.apiKey && decryptedApiKey === null);
+
+            return {
+                ...acc,
+                refreshToken: decryptedRefreshToken,
+                apiKey: decryptedApiKey,
+                lastUsed: acc.lastUsed || null,
+                enabled: acc.enabled !== false,
+                // Mark as invalid if token decryption failed
+                isInvalid: hasInvalidToken,
+                invalidReason: hasInvalidToken ? 'Token decryption failed - re-authentication required' : null,
+                modelRateLimits: acc.modelRateLimits || {},
+                subscription: acc.subscription || { tier: 'unknown', projectId: null, detectedAt: null },
+                quota: acc.quota || { models: {}, lastChecked: null }
+            };
+        });
 
         const settings = config.settings || {};
         let activeIndex = config.activeIndex || 0;
@@ -111,17 +123,17 @@ export async function saveAccounts(configPath, accounts, settings, activeIndex) 
             accounts: accounts.map(acc => ({
                 email: acc.email,
                 source: acc.source,
-                enabled: acc.enabled !== false, // Persist enabled state
+                enabled: acc.enabled !== false,
                 dbPath: acc.dbPath || null,
-                refreshToken: acc.source === 'oauth' ? acc.refreshToken : undefined,
-                apiKey: acc.source === 'manual' ? acc.apiKey : undefined,
+                // Encrypt sensitive credentials before saving
+                refreshToken: acc.source === 'oauth' && acc.refreshToken ? encrypt(acc.refreshToken) : undefined,
+                apiKey: acc.source === 'manual' && acc.apiKey ? encrypt(acc.apiKey) : undefined,
                 projectId: acc.projectId || undefined,
                 addedAt: acc.addedAt || undefined,
                 isInvalid: acc.isInvalid || false,
                 invalidReason: acc.invalidReason || null,
                 modelRateLimits: acc.modelRateLimits || {},
                 lastUsed: acc.lastUsed,
-                // Persist subscription and quota data
                 subscription: acc.subscription || { tier: 'unknown', projectId: null, detectedAt: null },
                 quota: acc.quota || { models: {}, lastChecked: null }
             })),
