@@ -182,9 +182,10 @@ export function mountWebUI(app, dirname, accountManager) {
     // Security headers middleware
     app.use((req, res, next) => {
         // Content Security Policy - restrict script and style sources
+        // Note: 'unsafe-eval' required for Alpine.js x-data expressions
         res.setHeader('Content-Security-Policy', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net",  // Alpine.js and Chart.js from CDN
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net",  // Alpine.js requires unsafe-eval
             "style-src 'self' 'unsafe-inline'",  // Tailwind and inline styles
             "img-src 'self' data:",
             "font-src 'self'",
