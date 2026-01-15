@@ -52,10 +52,18 @@ const ENCRYPTED_PREFIX = 'enc:v1:';
  * @returns {Buffer} 32-byte (KEY_LENGTH) encryption key
  */
 function deriveKey() {
+    // os.userInfo() can throw on systems without passwd entry (Docker, some CI)
+    let username;
+    try {
+        username = os.userInfo().username;
+    } catch {
+        username = process.env.USER || process.env.LOGNAME || 'unknown';
+    }
+
     const machineInfo = [
         os.hostname(),
         os.homedir(),
-        os.userInfo().username,
+        username,
         ACCOUNT_CONFIG_PATH,
         process.env.COMPUTERNAME || process.env.HOSTNAME || 'node'
     ].join(':');
