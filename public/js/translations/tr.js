@@ -139,6 +139,7 @@ window.translations.tr = {
     lastUpdated: "Son Güncelleme",
     grepLogs: "günlükleri ara...",
     noMatchingModels: "Eşleşen model yok",
+    useCustomModel: 'Özel kullan: "{model}"',
     typeToSearch: "Aramak veya seçmek için yazın...",
     or: "VEYA",
     refreshingAccount: "{email} yenileniyor...",

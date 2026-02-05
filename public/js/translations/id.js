@@ -181,6 +181,7 @@ window.translations.id = {
     lastUpdated: "Terakhir Diperbarui",
     grepLogs: "cari log...",
     noMatchingModels: "Tidak ada model yang cocok",
+    useCustomModel: 'Gunakan kustom: "{model}"',
     typeToSearch: "Ketik untuk mencari...",
     or: "ATAU",
 

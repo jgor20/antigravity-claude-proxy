@@ -157,6 +157,7 @@ window.translations.en = {
     lastUpdated: "Last Updated",
     grepLogs: "grep logs...",
     noMatchingModels: "No matching models",
+    useCustomModel: 'Use custom: "{model}"',
     typeToSearch: "Type to search or select...",
     or: "OR",
     refreshingAccount: "Refreshing {email}...",

@@ -136,6 +136,7 @@ window.translations.pt = {
     lastUpdated: "Última Atualização",
     grepLogs: "grep logs...",
     noMatchingModels: "Nenhum modelo correspondente",
+    useCustomModel: 'Usar personalizado: "{model}"',
     typeToSearch: "Digite para buscar ou selecione...",
     or: "OU",
     refreshingAccount: "Atualizando {email}...",

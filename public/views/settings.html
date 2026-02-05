@@ -334,7 +334,8 @@
                             <div class="relative w-full" x-data="{ open: false, searchTerm: '' }">
                                 <input type="text" :value="open ? searchTerm : config.env.ANTHROPIC_MODEL"
                                     @input="searchTerm = $event.target.value" @focus="open = true; searchTerm = ''"
-                                    @click.away="open = false; searchTerm = ''"
+                                    @click.away="if (searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())) { selectModel('ANTHROPIC_MODEL', searchTerm.trim()); }; open = false; searchTerm = ''"
+                                    @keydown.enter.prevent="if (searchTerm.trim()) { selectModel('ANTHROPIC_MODEL', searchTerm.trim()); open = false; searchTerm = ''; $el.blur(); }"
                                     class="input input-sm w-full font-mono text-xs !bg-space-800 !border-space-border !text-white focus:!bg-space-800 focus:!border-neon-cyan pr-8 placeholder:!text-gray-600"
                                     :placeholder="open ? $store.global.t('typeToSearch') : ''"
                                     :class="{ '!text-gray-500': !open && !config.env.ANTHROPIC_MODEL }"
@@ -367,8 +368,15 @@
                                             </a>
                                         </li>
                                     </template>
+                                    <li x-show="searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())">
+                                        <a @mousedown.prevent="selectModel('ANTHROPIC_MODEL', searchTerm.trim()); open = false; searchTerm = ''"
+                                            class="font-mono text-xs py-2 hover:bg-space-800 border-b border-space-border/30 last:border-0 flex items-center gap-2 text-yellow-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
+                                            <span x-text="$store.global.t('useCustomModel', { model: searchTerm.trim() })"></span>
+                                        </a>
+                                    </li>
                                     <li
-                                        x-show="$store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
+                                        x-show="!searchTerm.trim() && $store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
                                         <span class="text-xs text-gray-500 italic py-2"
                                             x-text="$store.global.t('noMatchingModels')">No matching models</span>
                                     </li>
@@ -384,7 +392,8 @@
                             <div class="relative w-full" x-data="{ open: false, searchTerm: '' }">
                                 <input type="text" :value="open ? searchTerm : config.env.CLAUDE_CODE_SUBAGENT_MODEL"
                                     @input="searchTerm = $event.target.value" @focus="open = true; searchTerm = ''"
-                                    @click.away="open = false; searchTerm = ''"
+                                    @click.away="if (searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())) { selectModel('CLAUDE_CODE_SUBAGENT_MODEL', searchTerm.trim()); }; open = false; searchTerm = ''"
+                                    @keydown.enter.prevent="if (searchTerm.trim()) { selectModel('CLAUDE_CODE_SUBAGENT_MODEL', searchTerm.trim()); open = false; searchTerm = ''; $el.blur(); }"
                                     class="input input-sm w-full font-mono text-xs !bg-space-800 !border-space-border !text-white focus:!bg-space-800 focus:!border-neon-purple pr-8 placeholder:!text-gray-600"
                                     :placeholder="open ? $store.global.t('typeToSearch') : ''"
                                     :class="{ '!text-gray-500': !open && !config.env.CLAUDE_CODE_SUBAGENT_MODEL }"
@@ -417,8 +426,15 @@
                                             </a>
                                         </li>
                                     </template>
+                                    <li x-show="searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())">
+                                        <a @mousedown.prevent="selectModel('CLAUDE_CODE_SUBAGENT_MODEL', searchTerm.trim()); open = false; searchTerm = ''"
+                                            class="font-mono text-xs py-2 hover:bg-space-800 border-b border-space-border/30 last:border-0 flex items-center gap-2 text-yellow-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
+                                            <span x-text="$store.global.t('useCustomModel', { model: searchTerm.trim() })"></span>
+                                        </a>
+                                    </li>
                                     <li
-                                        x-show="$store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
+                                        x-show="!searchTerm.trim() && $store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
                                         <span class="text-xs text-gray-500 italic py-2"
                                             x-text="$store.global.t('noMatchingModels')">No matching models</span>
                                     </li>
@@ -440,7 +456,8 @@
                             <div class="relative w-full" x-data="{ open: false, searchTerm: '' }">
                                 <input type="text" :value="open ? searchTerm : config.env.ANTHROPIC_DEFAULT_OPUS_MODEL"
                                     @input="searchTerm = $event.target.value" @focus="open = true; searchTerm = ''"
-                                    @click.away="open = false; searchTerm = ''"
+                                    @click.away="if (searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())) { selectModel('ANTHROPIC_DEFAULT_OPUS_MODEL', searchTerm.trim()); }; open = false; searchTerm = ''"
+                                    @keydown.enter.prevent="if (searchTerm.trim()) { selectModel('ANTHROPIC_DEFAULT_OPUS_MODEL', searchTerm.trim()); open = false; searchTerm = ''; $el.blur(); }"
                                     class="input input-sm w-full font-mono text-xs !bg-space-800 !border-space-border !text-white focus:!bg-space-800 focus:!border-neon-cyan pr-8 placeholder:!text-gray-600"
                                     :placeholder="open ? $store.global.t('searchPlaceholder') : ''"
                                     :class="{ '!text-gray-500': !open && !config.env.ANTHROPIC_DEFAULT_OPUS_MODEL }"
@@ -472,8 +489,15 @@
                                             </a>
                                         </li>
                                     </template>
+                                    <li x-show="searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())">
+                                        <a @mousedown.prevent="selectModel('ANTHROPIC_DEFAULT_OPUS_MODEL', searchTerm.trim()); open = false; searchTerm = ''"
+                                            class="font-mono text-xs py-2 hover:bg-space-800 border-b border-space-border/30 last:border-0 flex items-center gap-2 text-yellow-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
+                                            <span x-text="$store.global.t('useCustomModel', { model: searchTerm.trim() })"></span>
+                                        </a>
+                                    </li>
                                     <li
-                                        x-show="$store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
+                                        x-show="!searchTerm.trim() && $store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
                                         <span class="text-xs text-gray-500 italic py-2"
                                             x-text="$store.global.t('noMatchingModels')">No matching models</span>
                                     </li>
@@ -488,7 +512,8 @@
                                 <input type="text"
                                     :value="open ? searchTerm : config.env.ANTHROPIC_DEFAULT_SONNET_MODEL"
                                     @input="searchTerm = $event.target.value" @focus="open = true; searchTerm = ''"
-                                    @click.away="open = false; searchTerm = ''"
+                                    @click.away="if (searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())) { selectModel('ANTHROPIC_DEFAULT_SONNET_MODEL', searchTerm.trim()); }; open = false; searchTerm = ''"
+                                    @keydown.enter.prevent="if (searchTerm.trim()) { selectModel('ANTHROPIC_DEFAULT_SONNET_MODEL', searchTerm.trim()); open = false; searchTerm = ''; $el.blur(); }"
                                     class="input input-sm w-full font-mono text-xs !bg-space-800 !border-space-border !text-white focus:!bg-space-800 focus:!border-neon-cyan pr-8 placeholder:!text-gray-600"
                                     :placeholder="open ? $store.global.t('searchPlaceholder') : ''"
                                     :class="{ '!text-gray-500': !open && !config.env.ANTHROPIC_DEFAULT_SONNET_MODEL }"
@@ -520,8 +545,15 @@
                                             </a>
                                         </li>
                                     </template>
+                                    <li x-show="searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())">
+                                        <a @mousedown.prevent="selectModel('ANTHROPIC_DEFAULT_SONNET_MODEL', searchTerm.trim()); open = false; searchTerm = ''"
+                                            class="font-mono text-xs py-2 hover:bg-space-800 border-b border-space-border/30 last:border-0 flex items-center gap-2 text-yellow-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
+                                            <span x-text="$store.global.t('useCustomModel', { model: searchTerm.trim() })"></span>
+                                        </a>
+                                    </li>
                                     <li
-                                        x-show="$store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
+                                        x-show="!searchTerm.trim() && $store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
                                         <span class="text-xs text-gray-500 italic py-2"
                                             x-text="$store.global.t('noMatchingModels')">No matching models</span>
                                     </li>
@@ -535,7 +567,8 @@
                             <div class="relative w-full" x-data="{ open: false, searchTerm: '' }">
                                 <input type="text" :value="open ? searchTerm : config.env.ANTHROPIC_DEFAULT_HAIKU_MODEL"
                                     @input="searchTerm = $event.target.value" @focus="open = true; searchTerm = ''"
-                                    @click.away="open = false; searchTerm = ''"
+                                    @click.away="if (searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())) { selectModel('ANTHROPIC_DEFAULT_HAIKU_MODEL', searchTerm.trim()); }; open = false; searchTerm = ''"
+                                    @keydown.enter.prevent="if (searchTerm.trim()) { selectModel('ANTHROPIC_DEFAULT_HAIKU_MODEL', searchTerm.trim()); open = false; searchTerm = ''; $el.blur(); }"
                                     class="input input-sm w-full font-mono text-xs !bg-space-800 !border-space-border !text-white focus:!bg-space-800 focus:!border-neon-cyan pr-8 placeholder:!text-gray-600"
                                     :placeholder="open ? $store.global.t('searchPlaceholder') : ''"
                                     :class="{ '!text-gray-500': !open && !config.env.ANTHROPIC_DEFAULT_HAIKU_MODEL }"
@@ -567,8 +600,15 @@
                                             </a>
                                         </li>
                                     </template>
+                                    <li x-show="searchTerm.trim() && !$store.data.models.some(m => m.toLowerCase() === searchTerm.trim().toLowerCase())">
+                                        <a @mousedown.prevent="selectModel('ANTHROPIC_DEFAULT_HAIKU_MODEL', searchTerm.trim()); open = false; searchTerm = ''"
+                                            class="font-mono text-xs py-2 hover:bg-space-800 border-b border-space-border/30 last:border-0 flex items-center gap-2 text-yellow-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_5px_rgba(250,204,21,0.5)]"></span>
+                                            <span x-text="$store.global.t('useCustomModel', { model: searchTerm.trim() })"></span>
+                                        </a>
+                                    </li>
                                     <li
-                                        x-show="$store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
+                                        x-show="!searchTerm.trim() && $store.data.models.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase())).length === 0">
                                         <span class="text-xs text-gray-500 italic py-2"
                                             x-text="$store.global.t('noMatchingModels')">No matching models</span>
                                     </li>

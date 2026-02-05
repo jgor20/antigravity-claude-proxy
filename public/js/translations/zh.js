@@ -157,6 +157,7 @@ window.translations.zh = {
     lastUpdated: "最后更新",
     grepLogs: "过滤日志...",
     noMatchingModels: "没有匹配的模型",
+    useCustomModel: '使用自定义: "{model}"',
     typeToSearch: "输入以搜索或选择...",
     or: "或",
     refreshingAccount: "正在刷新 {email}...",
