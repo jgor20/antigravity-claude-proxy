@@ -348,11 +348,11 @@ window.translations.tr = {
     // TODO: Missing translations - Hardcoded strings from JS (Error Messages)
     // operationFailed: "Operation failed",
     // unknownError: "Unknown error",
-    // presetNameRequired: "Preset name is required",
+    presetNameRequired: "Ön ayar adı gerekli",
     // saveFailed: "Save failed",
     // failedToSavePreset: "Failed to save preset",
     // noPresetSelected: "No preset selected",
-    // deletePresetConfirm: "Delete preset \"{name}\"?",
+    deletePresetConfirm: "Ön ayar \"{name}\" silinsin mi?",
     // deleteFailed: "Delete failed",
     // failedToDeletePreset: "Failed to delete preset",
     // failedToChangePassword: "Failed to change password",
