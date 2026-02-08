@@ -1,10 +1,4 @@
-<div x-data x-init="
-    window.addEventListener('switch-settings-tab', (e) => {
-        if (e.detail && ['ui', 'claude', 'models', 'server'].includes(e.detail)) {
-            $store.global.settingsTab = e.detail;
-        }
-    });
-" class="view-container-centered">
+<div x-data class="view-container-centered">
     <!-- Header & Tabs -->
     <div class="view-card !p-0 flex flex-col overflow-hidden">
         <div class="bg-space-900/50 border-b border-space-border px-8 pt-8 pb-0 shrink-0">
@@ -219,28 +213,6 @@
                         <code class="text-neon-cyan font-mono" x-text="configPath">~/.claude/settings.json</code>.
                         <span x-text="$store.global.t('claudeSettingsAlertSuffix')">Restart Claude CLI to apply.</span>
                     </span>
-                </div>
-
-                <!-- Apply Preset Alert Banner -->
-                <div x-show="needsApply()" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-                    class="alert bg-gradient-to-r from-neon-purple/10 to-neon-cyan/10 border border-neon-purple/50 shadow-lg shadow-neon-purple/10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-neon-purple animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="flex-1">
-                        <span class="text-white font-medium" x-text="$store.global.t('presetNotApplied')">Preset not applied</span>
-                        <span class="text-gray-400 text-sm ml-1" x-text="'- ' + ($store.global.t('presetNotAppliedDesc') || 'Click the button below to apply the selected preset to Claude CLI.')"></span>
-                    </div>
-                    <button class="btn btn-sm bg-neon-purple hover:bg-purple-600 border-none text-white gap-1 animate-bounce-subtle"
-                        @click="saveClaudeConfig" :disabled="loading">
-                        <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                        </svg>
-                        <span x-show="!loading" x-text="$store.global.t('applyNow')">Apply Now</span>
-                        <span x-show="loading" class="loading loading-spinner loading-xs"></span>
-                    </button>
                 </div>
 
                 <!-- Mode Toggle (Proxy/Paid) -->
